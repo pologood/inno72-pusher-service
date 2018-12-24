@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC   
+    "-//mybatis.org//DTD Mapper 3.0//EN"  
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd"> 
+<mapper namespace="com.inno72.pusher.mapper.PusherInfoDao">
+    
+    <resultMap id="PusherServiceDaoMap" type="com.inno72.pusher.model.PusherServiceDaoBean">
+		<id property="id" 				column="id" />
+		<result property="name" 		column="name"/>
+		<result property="serviceType" 	column="serivce_type"/>
+		<result property="service" 		column="service"/>
+		<result property="request" 		column="request"/>
+	</resultMap>
+	
+	<resultMap id="PusherTaskDaoMap" type="com.inno72.pusher.model.PusherTaskDaoBean">
+		<id property="id" 				column="id" />
+		<result property="targetCode" 	column="target_code"/>
+		<result property="queueLevel" 	column="queue_level"/>
+		<result property="message" 		column="message"/>
+		<result property="status" 		column="status"/>
+		<result property="times" 		column="times"/>
+		<result property="createTime" 	column="create_time"/>
+		<result property="updateTime" 	column="update_time"/>
+	</resultMap>
+	
+	
+    <select id="queryServiceMaps"  resultMap="PusherServiceDaoMap">  
+        SELECT * FROM INNO72_PUSHER_SERVICE
+    </select>
+    
+    
+    <select id="queryAvailable" resultMap="PusherTaskDaoMap">
+    	SELECT * FROM INNO72_PUSHER_TASK WHERE STATUS=0 ORDER BY CREATE_TIME
+    </select>
+    
+    <insert id="insertPusherTask" parameterType="com.inno72.pusher.model.PusherTaskDaoBean">
+    	INSERT IGNORE INTO INNO72_PUSHER_TASK(ID, TARGET_CODE, QUEUE_LEVEL, MESSAGE, STATUS, TIMES, CREATE_TIME, UPDATE_TIME)
+    	VALUES(#{id}, #{targetCode}, #{queueLevel}, #{message}, #{status}, #{times}, #{createTime}, #{updateTime})
+    </insert>
+    
+    <update id="updatePusherTaskStatus">
+    	UPDATE INNO72_PUSHER_TASK SET STATUS=#{status}, UPDATE_TIME=#{updateTime}
+    	WHERE ID=#{id}
+    </update>
+    
+     <update id="updatePusherTaskQueueLevel">
+    	UPDATE INNO72_PUSHER_TASK SET QUEUE_LEVEL=#{queueLevel}, TIMES=#{times}, UPDATE_TIME=#{updateTime}
+    	WHERE ID=#{id}
+    </update>
+     
+    
+</mapper> 
