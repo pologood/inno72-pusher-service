@@ -28,6 +28,38 @@
 			<groupId>com.inno72</groupId>
 			<artifactId>inno72-core</artifactId>
 			<version>${frame.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>io.netty</groupId>
+					<artifactId>netty-buffer</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>io.netty</groupId>
+					<artifactId>netty-handler</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>io.netty</groupId>
+					<artifactId>netty-codec-http</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>io.netty</groupId>
+					<artifactId>
+						netty-transport-native-epoll
+					</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>io.netty</groupId>
+					<artifactId>netty-codec</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>io.netty</groupId>
+					<artifactId>netty-transport</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>io.netty</groupId>
+					<artifactId>netty-common</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
 		<dependency>
@@ -35,7 +67,7 @@
 			<artifactId>netty-all</artifactId>
 			<version>4.1.32.Final</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>com.alibaba</groupId>
 			<artifactId>fastjson</artifactId>
@@ -95,6 +127,36 @@
 						<exclude>
 							<groupId>ch.qos.logback</groupId>
 							<artifactId>logback-classic</artifactId>
+						</exclude>
+						<exclude>
+							<groupId>io.netty</groupId>
+							<artifactId>netty-buffer</artifactId>
+						</exclude>
+						<exclude>
+							<groupId>io.netty</groupId>
+							<artifactId>netty-handler</artifactId>
+						</exclude>
+						<exclude>
+							<groupId>io.netty</groupId>
+							<artifactId>netty-codec-http</artifactId>
+						</exclude>
+						<exclude>
+							<groupId>io.netty</groupId>
+							<artifactId>
+								netty-transport-native-epoll
+							</artifactId>
+						</exclude>
+						<exclude>
+							<groupId>io.netty</groupId>
+							<artifactId>netty-codec</artifactId>
+						</exclude>
+						<exclude>
+							<groupId>io.netty</groupId>
+							<artifactId>netty-transport</artifactId>
+						</exclude>
+						<exclude>
+							<groupId>io.netty</groupId>
+							<artifactId>netty-common</artifactId>
 						</exclude>
 					</excludes>
 					<!-- 添加src/main/resources下的所有文件 -->
