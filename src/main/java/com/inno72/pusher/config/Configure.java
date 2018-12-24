@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class Configure {
 
-	@Bean(name="asyncPersistenceExecutor", destroyMethod="shutdown")
+	@Bean(name="asyncPersistenceExecutor")
 	ExecutorService getAsyncPersistenceExecutor() {
 		ExecutorService executor = Executors.newFixedThreadPool(8, new ThreadFactory() {
 			private AtomicInteger threadIndex = new AtomicInteger(0);
@@ -26,7 +26,7 @@ public class Configure {
 	}
 	
 	
-	@Bean(name="asyncPublicExecutor", destroyMethod="shutdown")
+	@Bean(name="asyncPublicExecutor")
 	ExecutorService getAsyncPublicExecutor() {
 		ExecutorService executor = Executors.newFixedThreadPool(32, new ThreadFactory() {
 			private AtomicInteger threadIndex = new AtomicInteger(0);
