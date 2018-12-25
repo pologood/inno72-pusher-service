@@ -160,7 +160,8 @@ public class PusherTaskService implements RemotingPostConstruct, SenderResultHan
 			
 			
 		}else {
-			final PusherTaskDaoBean failTask = pushQueues.handleFailTask(task).clone();
+			final PusherTaskDaoBean failTask = pushQueues.handleFailTask(task);
+			
 			if(failTask != null) {
 				final PusherTaskDaoBean persistTask  = failTask.clone();
 				

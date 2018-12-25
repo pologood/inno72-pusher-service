@@ -137,7 +137,7 @@ public class PushQueues {
 			
 		}else if(task.getQueueLevel() == 3){
 			if(task.getTimes() >= THIRD_LEVEL_QUEUE_TIMES) {
-				task.setQueueLevel(3);
+				task.setQueueLevel(4);
 				task.setTimes(0);
 				task.setUpdateTime(currentTime);
 			}else {
