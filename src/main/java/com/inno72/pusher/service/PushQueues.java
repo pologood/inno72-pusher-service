@@ -68,7 +68,7 @@ public class PushQueues {
 		
 		while(it.hasNext()){
 			PusherTaskDaoBean task = it.next();
-		    if(task.getUpdateTime() + duration < time) {
+		    if(task.getUpdateTime() + duration > time) {
 		    	queue.add(task);
 		    	it.remove();
 		    }

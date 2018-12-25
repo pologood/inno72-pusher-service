@@ -2,6 +2,7 @@ package com.inno72.pusher.service;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Timer;
@@ -68,7 +69,16 @@ public class PusherTaskService implements RemotingPostConstruct, SenderResultHan
 			@Override
 			public void run() {
 				long currentTime = System.currentTimeMillis();
-				List<PusherTaskDaoBean> tasks = getNeedResendTask(1, currentTime);
+				
+				List<PusherTaskDaoBean> tasks = new LinkedList<PusherTaskDaoBean>();
+				
+				for(int i=1; i<=3; i++) {
+					List<PusherTaskDaoBean> resendTasks = getNeedResendTask(i, currentTime);
+					if(resendTasks != null) {
+						tasks.addAll(resendTasks);
+					}
+				}
+				
 				if(tasks != null && tasks.size() > 0) {
 					clientManager.sendMsgs(tasks, PusherTaskService.this);
 				}			
