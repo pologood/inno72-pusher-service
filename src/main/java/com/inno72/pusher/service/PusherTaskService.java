@@ -157,8 +157,10 @@ public class PusherTaskService implements RemotingPostConstruct, SenderResultHan
 				asyncPersistenceExecutor.submit( new Runnable() {
 					@Override
 					public void run() {
-						pusherInfoDao.updatePusherTaskQueueLevel(persistTask.getId(), persistTask.getQueueLevel(), 
-								persistTask.getTimes(), persistTask.getUpdateTime());
+						if(pusherInfoDao.insertPusherTask(persistTask) == 0) {
+							pusherInfoDao.updatePusherTaskQueueLevel(persistTask.getId(), persistTask.getQueueLevel(), 
+									persistTask.getTimes(), persistTask.getUpdateTime());
+						}
 					}
 				});
 			}
