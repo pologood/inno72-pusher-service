@@ -166,5 +166,18 @@ public class PusherController {
 		
 		return rspBean;
 	}
+	
+	@RequestMapping(value="/reload/service")
+	public  Result<Void> reloadService(){
+				
+		pusherTaskService.loadServiceMap();
+		
+		Result<Void> rspBean = new Result<Void>();
+		rspBean.setCode(0);
+		rspBean.setMsg("ok");
+		
+		return rspBean;
+	}
+	
 
 }
