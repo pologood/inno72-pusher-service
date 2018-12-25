@@ -152,5 +152,19 @@ public class PusherController {
 		
 		return rspBean;
 	}
+	
+	
+	@RequestMapping(value="/push/map")
+	public  Result<Map<String, String>> pushMap(){
+				
+		Map<String, String> map = clientManager.getKeyChannelMap();
+		
+		Result<Map<String, String>> rspBean = new Result<Map<String, String>>();
+		rspBean.setCode(0);
+		rspBean.setData(map);
+		rspBean.setMsg("ok");
+		
+		return rspBean;
+	}
 
 }

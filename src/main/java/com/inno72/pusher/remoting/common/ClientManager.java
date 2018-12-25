@@ -1,10 +1,13 @@
 package com.inno72.pusher.remoting.common;
 
+import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -31,9 +34,9 @@ public class ClientManager implements ChannelEventListener, ChannelIdleClear, Cl
 
 	private ConcurrentHashMap<String, Channel> keyToChannelMap = new ConcurrentHashMap<String, Channel>();
 
-	private ReentrantLock registerLocker = new ReentrantLock();
+	private ReentrantReadWriteLock registerLocker = new ReentrantReadWriteLock();
 
-	private ReentrantLock waitLocker = new ReentrantLock();
+	private ReentrantReadWriteLock waitLocker = new ReentrantReadWriteLock();
 
 	private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -46,7 +49,7 @@ public class ClientManager implements ChannelEventListener, ChannelIdleClear, Cl
 		}
 
 		try {
-			registerLocker.lock();
+			registerLocker.writeLock().lock();
 
 			Channel perChannel = keyToChannelMap.get(key);
 			if (perChannel != null) {
@@ -61,7 +64,7 @@ public class ClientManager implements ChannelEventListener, ChannelIdleClear, Cl
 			keyToChannelMap.put(key, channel);
 			channelToKeyMap.put(channel, key);
 		} finally {
-			registerLocker.unlock();
+			registerLocker.writeLock().unlock();
 		}
 
 		return true;
@@ -70,7 +73,7 @@ public class ClientManager implements ChannelEventListener, ChannelIdleClear, Cl
 	public void removeClient(String key) {
 
 		try {
-			registerLocker.lock();
+			registerLocker.writeLock().lock();
 			Channel channel = keyToChannelMap.get(key);
 			if (channel == null) {
 				return;
@@ -84,7 +87,7 @@ public class ClientManager implements ChannelEventListener, ChannelIdleClear, Cl
 			}
 
 		} finally {
-			registerLocker.unlock();
+			registerLocker.writeLock().unlock();
 		}
 
 	}
@@ -98,7 +101,7 @@ public class ClientManager implements ChannelEventListener, ChannelIdleClear, Cl
 		if (removeWaitChannel(channel)) return;
 
 		try {
-			registerLocker.lock();
+			registerLocker.writeLock().lock();
 			String key = channelToKeyMap.get(channel);
 			if (key == null) {
 				return;
@@ -111,7 +114,7 @@ public class ClientManager implements ChannelEventListener, ChannelIdleClear, Cl
 			}
 
 		} finally {
-			registerLocker.unlock();
+			registerLocker.writeLock().unlock();
 		}
 	}
 
@@ -135,7 +138,7 @@ public class ClientManager implements ChannelEventListener, ChannelIdleClear, Cl
 
 	public boolean removeWaitChannel(Channel channel) {
 		try {
-			waitLocker.lock();
+			waitLocker.writeLock().lock();
 
 			if (waitToRegisterMap.containsKey(channel)) {
 				waitToRegisterMap.remove(channel);
@@ -145,7 +148,7 @@ public class ClientManager implements ChannelEventListener, ChannelIdleClear, Cl
 			}
 
 		} finally {
-			waitLocker.unlock();
+			waitLocker.writeLock().unlock();
 		}
 	}
 
@@ -155,7 +158,7 @@ public class ClientManager implements ChannelEventListener, ChannelIdleClear, Cl
 
 		long currentTime = System.currentTimeMillis();
 		try {
-			waitLocker.lock();
+			waitLocker.writeLock().lock();
 
 			Iterator<Entry<Channel, Long>> it = waitToRegisterMap.entrySet().iterator();
 
@@ -173,7 +176,7 @@ public class ClientManager implements ChannelEventListener, ChannelIdleClear, Cl
 			}
 
 		} finally {
-			waitLocker.unlock();
+			waitLocker.writeLock().unlock();
 		}
 
 
@@ -225,7 +228,6 @@ public class ClientManager implements ChannelEventListener, ChannelIdleClear, Cl
 
 	}
 
-	
 	@Override
 	public void sendMsgs(List<PusherTaskDaoBean> tasks, SenderResultHandler handler) {
 		
@@ -234,5 +236,21 @@ public class ClientManager implements ChannelEventListener, ChannelIdleClear, Cl
 		}
 		
 	}
-
+	
+	
+	public Map<String, String> getKeyChannelMap(){
+		
+		Map<String, String> ret = new HashMap<String, String>();
+		
+		Enumeration<String> keys = keyToChannelMap.keys();
+		
+		while(keys.hasMoreElements()) {
+			String key = keys.nextElement();
+			
+			ret.put(key, RemotingHelper.parseChannelRemoteAddr(keyToChannelMap.get(key)));
+		}
+		
+		return ret;
+	}
+	
 }
