@@ -42,7 +42,7 @@ public class ClientManager implements ChannelEventListener, ChannelIdleClear, Cl
 
 	
 
-	public boolean registerClient(String key, Channel channel) {
+	protected boolean registerClient(String key, Channel channel) {
 
 		if (StringUtils.isBlank(key) || channel == null) {
 			return false;
