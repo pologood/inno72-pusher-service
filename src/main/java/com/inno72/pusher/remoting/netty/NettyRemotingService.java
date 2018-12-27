@@ -161,7 +161,7 @@ public class NettyRemotingService implements RemotingService, ApplicationContext
 								new HttpObjectAggregator(1024 * 1024 * 10));
 						ch.pipeline().addLast(defaultEventExecutorGroup, "encoder", new HttpResponseEncoder());
 						ch.pipeline().addLast(defaultEventExecutorGroup, "handshake",
-								new WebSocketServerProtocolHandler(""));
+								new WebSocketServerProtocolHandler("/"));
 						ch.pipeline().addLast(defaultEventExecutorGroup, new NettyConnectManageHandler());
 						ch.pipeline().addLast(defaultEventExecutorGroup, "transaction", applicationContext.getBean(TransactionHandle.class));
 					}
@@ -189,8 +189,8 @@ public class NettyRemotingService implements RemotingService, ApplicationContext
             @Override
             public void run() {
                 try {
-                	if(channelIdleClear != null)
-                		channelIdleClear.clearTimeoutChannel(5000);
+//                	if(channelIdleClear != null)
+//                		channelIdleClear.clearTimeoutChannel(5000);
                 } catch (Throwable e) {
                 	logger.error("scanResponseTable exception", e);
                 }
