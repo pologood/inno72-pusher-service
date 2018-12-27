@@ -189,8 +189,8 @@ public class NettyRemotingService implements RemotingService, ApplicationContext
             @Override
             public void run() {
                 try {
-//                	if(channelIdleClear != null)
-//                		channelIdleClear.clearTimeoutChannel(5000);
+                	if(channelIdleClear != null)
+                		channelIdleClear.clearTimeoutChannel(5000);
                 } catch (Throwable e) {
                 	logger.error("scanResponseTable exception", e);
                 }
