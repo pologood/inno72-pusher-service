@@ -13,6 +13,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
 
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -186,7 +187,19 @@ public class PusherTaskService implements RemotingPostConstruct, SenderResultHan
 		
 		final String url = serviceMap.get(method);
 		
-		if(url == null) {
+		if(StringUtils.isBlank(url)) {
+			
+			if("machine.register".equalsIgnoreCase(method)) {
+				String machineCode = param.getString("machineCode");
+				if(StringUtils.isNotBlank(machineCode)) {
+					clientManager.pickupWaitToRegister(machineCode, channel);
+					logger.info("register ok machineCode:" + machineCode);
+					return;
+				}else {
+					logger.warn("register fail not found machineCode");
+				}
+			}
+			
 			logger.warn("not found can support method:" + method);
 			return;
 		}
