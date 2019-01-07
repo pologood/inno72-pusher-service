@@ -189,7 +189,7 @@ public class PusherTaskService implements RemotingPostConstruct, SenderResultHan
 	}
 	
 	
-	public void handleWithRequest(final String method, final JSONObject param, Channel channel) {
+	public void handleWithRequest(final String method, final String msgType, final JSONObject param, Channel channel) {
 		
 		final String url = serviceMap.get(method);
 		
@@ -227,6 +227,15 @@ public class PusherTaskService implements RemotingPostConstruct, SenderResultHan
 							header = new HashMap<String, String>();
 							header.put("TargetCode", targetInfo.getTargetCode());
 							header.put("TargetType", targetInfo.getTargetType());
+						}
+						
+						if(StringUtils.isNotBlank(msgType)) {
+							if(header != null) {
+								header.put("MsgType", msgType);
+							}else {
+								header = new HashMap<String, String>();
+								header.put("MsgType", msgType);
+							}
 						}
 						
 						byte[] res = HttpFormConnector.doPostJson(url, param, header, 1000);
