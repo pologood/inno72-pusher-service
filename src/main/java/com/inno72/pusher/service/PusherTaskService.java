@@ -1,6 +1,7 @@
 package com.inno72.pusher.service;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -20,6 +21,7 @@ import org.springframework.stereotype.Component;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.inno72.pusher.dto.TargetInfoBean;
 import com.inno72.pusher.mapper.PusherInfoDao;
 import com.inno72.pusher.model.PusherServiceDaoBean;
 import com.inno72.pusher.model.PusherTaskDaoBean;
@@ -81,7 +83,11 @@ public class PusherTaskService implements RemotingPostConstruct, SenderResultHan
 				}
 				
 				if(tasks != null && tasks.size() > 0) {
-					clientManager.sendMsgs(tasks, PusherTaskService.this);
+					try {
+						clientManager.sendMsgs(tasks, PusherTaskService.this);
+					} catch (UnsupportedEncodingException e) {
+						logger.warn(e.getMessage(), e);
+					}
 				}			
 			}
 		}, 1000 * 10, 5000);
@@ -190,13 +196,14 @@ public class PusherTaskService implements RemotingPostConstruct, SenderResultHan
 		if(StringUtils.isBlank(url)) {
 			
 			if("machine.register".equalsIgnoreCase(method)) {
-				String machineCode = param.getString("machineCode");
-				if(StringUtils.isNotBlank(machineCode)) {
-					clientManager.pickupWaitToRegister(machineCode, channel);
-					logger.info("register ok machineCode:" + machineCode);
+				String targetCode = param.getString("targetCode");
+				String targetType = param.getString("type");
+				if(StringUtils.isNotBlank(targetCode) && StringUtils.isNotBlank(targetType)) {
+					clientManager.pickupWaitToRegister(new TargetInfoBean(targetCode, targetType), channel);
+					logger.info("register ok targetCode:{} type:{}", targetCode, targetType);
 					return;
 				}else {
-					logger.warn("register fail not found machineCode");
+					logger.warn("register fail not found targetCode or type");
 				}
 			}
 			
@@ -213,23 +220,33 @@ public class PusherTaskService implements RemotingPostConstruct, SenderResultHan
 					try {
 						
 						param.put("clientIp", RemotingHelper.parseChannelRemoteAddr(channel));
-						String paramStr = param.toJSONString();
 						
-						byte[] res = HttpFormConnector.doPost(url, paramStr.getBytes("utf-8"), "application/json", 1000);
+						TargetInfoBean targetInfo = clientManager.getTargetInfo(channel);
+						Map<String, String> header = null;
+						if(targetInfo != null) {
+							header = new HashMap<String, String>();
+							header.put("TargetCode", targetInfo.getTargetCode());
+							header.put("TargetType", targetInfo.getTargetType());
+						}
+						
+						byte[] res = HttpFormConnector.doPostJson(url, param, header, 1000);
 						
 						String resStr = new String(res);
 						
-						logger.info("method:{} param:{} ret:{}", method, paramStr, resStr);
+						logger.info("method:{} param:{} ret:{}", method, param.toJSONString(), resStr);
 						
 						if("machine.register".equalsIgnoreCase(method)) {
 							
 							JSONObject retJson = JSON.parseObject(resStr);
 							
-							String machineCode = retJson.getJSONObject("data").getString("machineCode");
+							String targetCode = retJson.getJSONObject("data").getString("targetCode");
+							String targetType = retJson.getJSONObject("data").getString("type");
 							
-							if(retJson.getIntValue("code") == 0 && machineCode != null) {
-								clientManager.pickupWaitToRegister(machineCode, channel);
-								logger.info("register ok machineCode:" + machineCode);
+							if(retJson.getIntValue("code") == 0 && StringUtils.isNotBlank(targetCode) && StringUtils.isNotBlank(targetType)) {
+								clientManager.pickupWaitToRegister(new TargetInfoBean(targetCode, targetType), channel);
+								logger.info("register ok targetCode:{} type:{}", targetCode, targetType);
+							}else {
+								logger.warn("register fail not found targetCode or type");
 							}
 						}
 						

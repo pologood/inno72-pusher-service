@@ -1,7 +1,7 @@
 package com.inno72.pusher.controller;
 
-import java.util.Map;
-import java.util.Set;
+import java.io.UnsupportedEncodingException;
+import java.util.List;
 
 import javax.annotation.Resource;
 
@@ -11,173 +11,232 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.inno72.common.Result;
+import com.inno72.pusher.common.Constants;
+import com.inno72.pusher.dto.KickOffTargetsBean;
 import com.inno72.pusher.dto.PushMultiToMultiBean;
 import com.inno72.pusher.dto.PushMultiToOneBean;
 import com.inno72.pusher.dto.PushOneBean;
+import com.inno72.pusher.dto.TargetInfoBean;
 import com.inno72.pusher.model.PusherTaskDaoBean;
 import com.inno72.pusher.remoting.common.ClientManager;
+import com.inno72.pusher.remoting.common.Pair;
 import com.inno72.pusher.service.IdWorker;
 import com.inno72.pusher.service.PusherTaskService;
 
 @RestController
 @RequestMapping("/pusher")
 public class PusherController {
-	
+
 
 	@Resource
-	private ClientManager  clientManager;
-	
+	private ClientManager clientManager;
+
 	@Resource
 	private PusherTaskService pusherTaskService;
-	
-	
+
+
 	@Resource
 	private IdWorker idWorker;
-	
-	@RequestMapping(value="/push/one")
-	public  Result<Void> pushOne(@RequestBody PushOneBean reqBean){
-		
-		if(StringUtils.isBlank(reqBean.getMachineCode()) || StringUtils.isBlank(reqBean.getData())) {
-			
+
+	@RequestMapping(value = "/push/one")
+	public Result<Void> pushOne(@RequestBody PushOneBean reqBean) throws UnsupportedEncodingException {
+
+		if (StringUtils.isBlank(reqBean.getTargetCode()) || StringUtils.isBlank(reqBean.getTargetType())
+				|| StringUtils.isBlank(reqBean.getData())) {
+
 			Result<Void> rspBean = new Result<Void>();
 			rspBean.setCode(-1);
 			rspBean.setMsg("param error");
-			
+
 			return rspBean;
-			
+
 		}
-		
+
 		long currentTime = System.currentTimeMillis();
-		
+
 		PusherTaskDaoBean bean = new PusherTaskDaoBean();
-		
+
 		bean.setCreateTime(currentTime);
 		bean.setUpdateTime(currentTime);
 		bean.setId(idWorker.nextId());
-		bean.setTargetCode(reqBean.getMachineCode());
-		bean.setMessage(reqBean.getData());
-		
-		if(reqBean.getIsQueue() == 1) {	
+		bean.setTargetCode(reqBean.getTargetCode());
+		bean.setTargetType(reqBean.getTargetType());
+		bean.setType(Constants.MSG_TYPE_TEXT);
+		bean.setMessage(reqBean.getData().getBytes("utf-8"));
+
+		if (reqBean.getIsQueue() == 1) {
 			clientManager.sendMsg(bean, pusherTaskService);
-		}else {
+		} else {
 			clientManager.sendMsg(bean, null);
 		}
-		
-		
+
+
 		Result<Void> rspBean = new Result<Void>();
 		rspBean.setCode(0);
 		rspBean.setMsg("ok");
-		
+
 		return rspBean;
-		
+
 	}
-	
-	@RequestMapping(value="/push/multi/multi")
-	public  Result<Void> pushMultiToMulti(@RequestBody PushMultiToMultiBean reqBean){
-		
-		if(reqBean.getPeers() == null) {
-			
+
+	@RequestMapping(value = "/push/multi/multi")
+	public Result<Void> pushMultiToMulti(@RequestBody PushMultiToMultiBean reqBean) throws UnsupportedEncodingException {
+
+		if (reqBean.getPeers() == null || reqBean.getPeers().isEmpty()) {
+
 			Result<Void> rspBean = new Result<Void>();
 			rspBean.setCode(-1);
 			rspBean.setMsg("param error");
-			
+
 			return rspBean;
-			
+
 		}
-		
-		Set<Map.Entry<String, String>> peers = reqBean.getPeers().entrySet();
-		
+
+		List<Pair<TargetInfoBean, String>> peers = reqBean.getPeers();
+
 		long currentTime = System.currentTimeMillis();
-		
-		for(Map.Entry<String, String> peer : peers) {
-		
+
+		for (Pair<TargetInfoBean, String> peer : peers) {
+
 			PusherTaskDaoBean bean = new PusherTaskDaoBean();
-			
+
 			bean.setCreateTime(currentTime);
 			bean.setUpdateTime(currentTime);
 			bean.setId(idWorker.nextId());
-			bean.setTargetCode(peer.getKey());
-			bean.setMessage(peer.getValue());
-			
-			if(reqBean.getIsQueue() == 1) {	
+			if (peer.getFirst() == null || StringUtils.isBlank(peer.getFirst().getTargetCode())
+					|| StringUtils.isBlank(peer.getFirst().getTargetType()) || StringUtils.isBlank(peer.getSecond())) {
+
+				Result<Void> rspBean = new Result<Void>();
+				rspBean.setCode(-1);
+				rspBean.setMsg("param error");
+
+				return rspBean;
+
+			}
+			bean.setTargetCode(peer.getFirst().getTargetCode());
+			bean.setTargetType(peer.getFirst().getTargetType());
+			bean.setType(Constants.MSG_TYPE_TEXT);
+			bean.setMessage(peer.getSecond().getBytes("utf-8"));
+
+			if (reqBean.getIsQueue() == 1) {
 				clientManager.sendMsg(bean, pusherTaskService);
-			}else {
+			} else {
 				clientManager.sendMsg(bean, null);
 			}
 		}
-		
+
 		Result<Void> rspBean = new Result<Void>();
 		rspBean.setCode(0);
 		rspBean.setMsg("ok");
-		
+
 		return rspBean;
 	}
-	
-	
-	@RequestMapping(value="/push/multi/one")
-	public  Result<Void> pushMultiToOne(@RequestBody PushMultiToOneBean reqBean){
-		
-		if(reqBean.getMachineCodes() == null ||  reqBean.getMachineCodes().isEmpty() ||  StringUtils.isBlank(reqBean.getData())) {
-			
+
+
+	@RequestMapping(value = "/push/multi/one")
+	public Result<Void> pushMultiToOne(@RequestBody PushMultiToOneBean reqBean) throws UnsupportedEncodingException {
+
+		if (reqBean.getTargets() == null || reqBean.getTargets().isEmpty() || StringUtils.isBlank(reqBean.getData())) {
+
 			Result<Void> rspBean = new Result<Void>();
 			rspBean.setCode(-1);
 			rspBean.setMsg("param error");
-			
+
 			return rspBean;
-			
+
 		}
-			
+
 		long currentTime = System.currentTimeMillis();
-		
-		for(String machineCode : reqBean.getMachineCodes()) {
-		
+
+		for (TargetInfoBean targetBean : reqBean.getTargets()) {
+
 			PusherTaskDaoBean bean = new PusherTaskDaoBean();
-			
+
 			bean.setCreateTime(currentTime);
 			bean.setUpdateTime(currentTime);
 			bean.setId(idWorker.nextId());
-			bean.setTargetCode(machineCode);
-			bean.setMessage(reqBean.getData());
+
+			if (StringUtils.isBlank(targetBean.getTargetCode()) || StringUtils.isBlank(targetBean.getTargetType())) {
+				Result<Void> rspBean = new Result<Void>();
+				rspBean.setCode(-1);
+				rspBean.setMsg("param error");
+
+				return rspBean;
+
+			}
 			
-			if(reqBean.getIsQueue() == 1) {	
+			bean.setTargetCode(targetBean.getTargetCode());
+			bean.setTargetType(targetBean.getTargetType());
+			bean.setType(Constants.MSG_TYPE_TEXT);
+
+			bean.setMessage(reqBean.getData().getBytes("utf-8"));
+
+			if (reqBean.getIsQueue() == 1) {
 				clientManager.sendMsg(bean, pusherTaskService);
-			}else {
+			} else {
 				clientManager.sendMsg(bean, null);
 			}
 		}
-		
+
 		Result<Void> rspBean = new Result<Void>();
 		rspBean.setCode(0);
 		rspBean.setMsg("ok");
-		
+
 		return rspBean;
 	}
-	
-	
-	@RequestMapping(value="/push/map")
-	public  Result<Map<String, String>> pushMap(){
-				
-		Map<String, String> map = clientManager.getKeyChannelMap();
-		
-		Result<Map<String, String>> rspBean = new Result<Map<String, String>>();
+
+
+	@RequestMapping(value = "/push/map")
+	public Result<List<Pair<String, TargetInfoBean>>> pushMap() {
+
+		List<Pair<String, TargetInfoBean>> ret = clientManager.getKeyChannelMap();
+
+		Result<List<Pair<String, TargetInfoBean>>> rspBean = new Result<List<Pair<String, TargetInfoBean>>>();
 		rspBean.setCode(0);
-		rspBean.setData(map);
+		rspBean.setData(ret);
 		rspBean.setMsg("ok");
-		
+
 		return rspBean;
 	}
-	
-	@RequestMapping(value="/reload/service")
-	public  Result<Void> reloadService(){
-				
+
+	@RequestMapping(value = "/reload/service")
+	public Result<Void> reloadService() {
+
 		pusherTaskService.loadServiceMap();
-		
+
 		Result<Void> rspBean = new Result<Void>();
 		rspBean.setCode(0);
 		rspBean.setMsg("ok");
-		
+	
 		return rspBean;
 	}
-	
+
+	@RequestMapping(value = "/kickoff")
+	public Result<Void> kickoff(@RequestBody KickOffTargetsBean reqBean) {
+
+		if (reqBean.getTargets() == null || reqBean.getTargets().isEmpty()) {
+
+			Result<Void> rspBean = new Result<Void>();
+			rspBean.setCode(-1);
+			rspBean.setMsg("param error");
+
+			return rspBean;
+
+			 
+		}
+		
+		for (TargetInfoBean targetInfo : reqBean.getTargets()) {
+			if(targetInfo == null || !targetInfo.check())
+				continue;
+			clientManager.kickOffChannel(targetInfo);
+		}
+
+		Result<Void> rspBean = new Result<Void>();
+		rspBean.setCode(0);
+		rspBean.setMsg("ok");
+
+		return rspBean;
+	}
+
 
 }

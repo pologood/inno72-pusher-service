@@ -17,36 +17,46 @@
 package com.inno72.pusher.remoting.common;
 
 public class Pair<T1, T2> {
-    private T1 object1;
-    private T2 object2;
+    private T1 first;
+    private T2 second;
 
-    public Pair(T1 object1, T2 object2) {
-        this.object1 = object1;
-        this.object2 = object2;
+    public Pair(T1 first, T2 second) {
+        this.first = first;
+        this.second = second;
     }
 
-    public T1 getObject1() {
-        return object1;
-    }
+   
 
-    public void setObject1(T1 object1) {
-        this.object1 = object1;
-    }
+	public T1 getFirst() {
+		return first;
+	}
 
-    public T2 getObject2() {
-        return object2;
-    }
 
-    public void setObject2(T2 object2) {
-        this.object2 = object2;
-    }
+
+	public void setFirst(T1 first) {
+		this.first = first;
+	}
+
+
+
+	public T2 getSecond() {
+		return second;
+	}
+
+
+
+	public void setSecond(T2 second) {
+		this.second = second;
+	}
+
+
 
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((object1 == null) ? 0 : object1.hashCode());
-		result = prime * result + ((object2 == null) ? 0 : object2.hashCode());
+		result = prime * result + ((first == null) ? 0 : first.hashCode());
+		result = prime * result + ((second == null) ? 0 : second.hashCode());
 		return result;
 	}
     

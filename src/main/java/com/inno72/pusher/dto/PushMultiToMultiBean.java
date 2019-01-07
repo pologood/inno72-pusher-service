@@ -1,19 +1,20 @@
 package com.inno72.pusher.dto;
 
-import java.util.Map;
+import java.util.List;
+
+import com.inno72.pusher.remoting.common.Pair;
 
 public class PushMultiToMultiBean {
 	
-	
-	private Map<String, String> peers;
+	private List<Pair<TargetInfoBean, String>> peers;
 	
 	private int isQueue = 0;
 
-	public Map<String, String> getPeers() {
+	public List<Pair<TargetInfoBean, String>> getPeers() {
 		return peers;
 	}
 
-	public void setPeers(Map<String, String> peers) {
+	public void setPeers(List<Pair<TargetInfoBean, String>> peers) {
 		this.peers = peers;
 	}
 
@@ -24,9 +25,5 @@ public class PushMultiToMultiBean {
 	public void setIsQueue(int isQueue) {
 		this.isQueue = isQueue;
 	}
-	
-	
-	
-	
 
 }

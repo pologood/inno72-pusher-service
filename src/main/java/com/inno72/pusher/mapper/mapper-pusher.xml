@@ -15,6 +15,8 @@
 	<resultMap id="PusherTaskDaoMap" type="com.inno72.pusher.model.PusherTaskDaoBean">
 		<id property="id" 				column="id" />
 		<result property="targetCode" 	column="target_code"/>
+		<result property="targetType" 	column="target_type"/>
+		<result property="type" 		column="type"/>
 		<result property="queueLevel" 	column="queue_level"/>
 		<result property="message" 		column="message"/>
 		<result property="status" 		column="status"/>
@@ -34,8 +36,8 @@
     </select>
     
     <insert id="insertPusherTask" parameterType="com.inno72.pusher.model.PusherTaskDaoBean">
-    	INSERT IGNORE INTO INNO72_PUSHER_TASK(ID, TARGET_CODE, QUEUE_LEVEL, MESSAGE, STATUS, TIMES, CREATE_TIME, UPDATE_TIME)
-    	VALUES(#{id}, #{targetCode}, #{queueLevel}, #{message}, #{status}, #{times}, #{createTime}, #{updateTime})
+    	INSERT IGNORE INTO INNO72_PUSHER_TASK(ID, TARGET_CODE, TARGET_TYPE, type, QUEUE_LEVEL, MESSAGE, STATUS, TIMES, CREATE_TIME, UPDATE_TIME)
+    	VALUES(#{id}, #{targetCode}, #{targetType}, #{type}, #{queueLevel}, #{message}, #{status}, #{times}, #{createTime}, #{updateTime})
     </insert>
     
     <update id="updatePusherTaskStatus">

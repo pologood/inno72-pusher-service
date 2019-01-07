@@ -1,14 +1,20 @@
 package com.inno72.pusher.model;
 
+import com.inno72.pusher.dto.TargetInfoBean;
+
 public class PusherTaskDaoBean {
 	
 	private Long id;
 	
 	private String targetCode;
 	
+	private String targetType;
+	
+	private int type;
+	
 	private Integer queueLevel = 0;
 	
-	private String message;
+	private byte[] message;
 	
 	private Integer status = 0;
 	
@@ -24,9 +30,11 @@ public class PusherTaskDaoBean {
 	
 	public PusherTaskDaoBean(PusherTaskDaoBean bean) {
 		this.id = bean.id == null ? null : bean.id.longValue();
-		this.targetCode = bean.targetCode == null ? null : bean.targetCode;
-		this.queueLevel = bean.queueLevel == null ? null : bean.queueLevel;
-		this.message = bean.message == null ? null : bean.message;
+		this.targetCode = bean.targetCode;
+		this.targetType = bean.targetType;
+		this.type = bean.type;
+		this.queueLevel = bean.queueLevel;
+		this.message = bean.message;
 		this.status = bean.status == null ? null : bean.status.intValue();
 		this.createTime = bean.createTime == null ? null : bean.createTime.longValue();
 		this.updateTime = bean.updateTime == null ? null : bean.updateTime.longValue();
@@ -42,12 +50,30 @@ public class PusherTaskDaoBean {
 		this.id = id;
 	}
 
+	
+
 	public String getTargetCode() {
 		return targetCode;
 	}
 
 	public void setTargetCode(String targetCode) {
 		this.targetCode = targetCode;
+	}
+
+	public String getTargetType() {
+		return targetType;
+	}
+
+	public void setTargetType(String targetType) {
+		this.targetType = targetType;
+	}
+
+	public int getType() {
+		return type;
+	}
+
+	public void setType(int type) {
+		this.type = type;
 	}
 
 	public Integer getQueueLevel() {
@@ -58,11 +84,11 @@ public class PusherTaskDaoBean {
 		this.queueLevel = queueLevel;
 	}
 
-	public String getMessage() {
+	public byte[] getMessage() {
 		return message;
 	}
 
-	public void setMessage(String message) {
+	public void setMessage(byte[] message) {
 		this.message = message;
 	}
 
@@ -103,6 +129,9 @@ public class PusherTaskDaoBean {
 		return  new PusherTaskDaoBean(this);
 	}
 	
+	public TargetInfoBean getTargetInfo() {
+		return new TargetInfoBean(this.getTargetCode(), this.getTargetType());
+	}
 	
 	
 

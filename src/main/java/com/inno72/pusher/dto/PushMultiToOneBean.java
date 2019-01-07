@@ -4,18 +4,19 @@ import java.util.List;
 
 public class PushMultiToOneBean {
 	
-	private List<String> machineCodes;
+	private List<TargetInfoBean> targets;
 	
 	private String data;
 	
 	private int isQueue = 0;
 
-	public List<String> getMachineCodes() {
-		return machineCodes;
+
+	public List<TargetInfoBean> getTargets() {
+		return targets;
 	}
 
-	public void setMachineCodes(List<String> machineCodes) {
-		this.machineCodes = machineCodes;
+	public void setTargets(List<TargetInfoBean> targets) {
+		this.targets = targets;
 	}
 
 	public String getData() {

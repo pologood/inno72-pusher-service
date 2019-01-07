@@ -1,10 +1,10 @@
 package com.inno72.pusher.remoting.common;
 
+import java.io.UnsupportedEncodingException;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+import com.inno72.pusher.dto.TargetInfoBean;
 import com.inno72.pusher.model.PusherTaskDaoBean;
 import com.inno72.pusher.remoting.ChannelEventListener;
 import com.inno72.pusher.remoting.ChannelIdleClear;
@@ -28,11 +29,11 @@ import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 @Component
 public class ClientManager implements ChannelEventListener, ChannelIdleClear, ClientSender {
 
-	private ConcurrentHashMap<Channel, String> channelToKeyMap = new ConcurrentHashMap<Channel, String>();
+	private ConcurrentHashMap<Channel, TargetInfoBean> channelToKeyMap = new ConcurrentHashMap<Channel, TargetInfoBean>();
 
 	private ConcurrentHashMap<Channel, Long> waitToRegisterMap = new ConcurrentHashMap<Channel, Long>();
 
-	private ConcurrentHashMap<String, Channel> keyToChannelMap = new ConcurrentHashMap<String, Channel>();
+	private ConcurrentHashMap<TargetInfoBean, Channel> keyToChannelMap = new ConcurrentHashMap<TargetInfoBean, Channel>();
 
 	private ReentrantReadWriteLock registerLocker = new ReentrantReadWriteLock();
 
@@ -42,9 +43,9 @@ public class ClientManager implements ChannelEventListener, ChannelIdleClear, Cl
 
 	
 
-	protected boolean registerClient(String key, Channel channel) {
+	protected boolean registerClient(TargetInfoBean key, Channel channel) {
 
-		if (StringUtils.isBlank(key) || channel == null) {
+		if (key == null || StringUtils.isBlank(key.getTargetCode()) || StringUtils.isBlank(key.getTargetType()) || channel == null) {
 			return false;
 		}
 
@@ -70,7 +71,7 @@ public class ClientManager implements ChannelEventListener, ChannelIdleClear, Cl
 		return true;
 	}
 
-	public void removeClient(String key) {
+	public void removeClient(TargetInfoBean key) {
 
 		try {
 			registerLocker.writeLock().lock();
@@ -102,7 +103,7 @@ public class ClientManager implements ChannelEventListener, ChannelIdleClear, Cl
 
 		try {
 			registerLocker.writeLock().lock();
-			String key = channelToKeyMap.get(channel);
+			TargetInfoBean key = channelToKeyMap.get(channel);
 			if (key == null) {
 				return;
 			}
@@ -126,7 +127,7 @@ public class ClientManager implements ChannelEventListener, ChannelIdleClear, Cl
 		}
 	}
 
-	public boolean pickupWaitToRegister(String key, Channel channel) {
+	public boolean pickupWaitToRegister(TargetInfoBean key, Channel channel) {
 
 		if (!removeWaitChannel(channel)) {
 			return false;
@@ -202,17 +203,17 @@ public class ClientManager implements ChannelEventListener, ChannelIdleClear, Cl
 	}
 
 	@Override
-	public void sendMsg(PusherTaskDaoBean task, SenderResultHandler handler) {
+	public void sendMsg(PusherTaskDaoBean task, SenderResultHandler handler) throws UnsupportedEncodingException {
 
-		Channel channel = keyToChannelMap.get(task.getTargetCode());
+		Channel channel = keyToChannelMap.get(task.getTargetInfo());
 
 		if (channel != null) {
-			TextWebSocketFrame rspFrame = new TextWebSocketFrame(task.getMessage());
+			TextWebSocketFrame rspFrame = new TextWebSocketFrame(new String(task.getMessage(), "utf-8"));
 			channel.writeAndFlush(rspFrame).addListener(new ChannelFutureListener() {
 				@Override
 				public void operationComplete(ChannelFuture future) throws Exception {
 					
-					logger.info("push isSuccess:{} target:{} msg:{} ", future.isSuccess(), task.getTargetCode(), task.getMessage());
+					logger.info("push isSuccess:{} target:{} msg:{} ", future.isSuccess(), task.getTargetInfo(), task.getMessage());
 					
 					if (handler != null) {
 						handler.handleResultHandler(future.isSuccess(), task);
@@ -220,7 +221,7 @@ public class ClientManager implements ChannelEventListener, ChannelIdleClear, Cl
 				}
 			});
 		} else {
-			logger.info("push isSuccess:false not conn target:{} msg:{} ", task.getTargetCode(), task.getMessage());
+			logger.info("push isSuccess:false not conn target:{} msg:{} ", task.getTargetInfo(), task.getMessage());
 			if (handler != null) {
 				handler.handleResultHandler(false, task);
 			}
@@ -229,7 +230,7 @@ public class ClientManager implements ChannelEventListener, ChannelIdleClear, Cl
 	}
 
 	@Override
-	public void sendMsgs(List<PusherTaskDaoBean> tasks, SenderResultHandler handler) {
+	public void sendMsgs(List<PusherTaskDaoBean> tasks, SenderResultHandler handler) throws UnsupportedEncodingException{
 		
 		for(PusherTaskDaoBean task : tasks) {
 			sendMsg(task, handler);
@@ -238,19 +239,41 @@ public class ClientManager implements ChannelEventListener, ChannelIdleClear, Cl
 	}
 	
 	
-	public Map<String, String> getKeyChannelMap(){
+	public TargetInfoBean getTargetInfo(Channel channel) {
 		
-		Map<String, String> ret = new HashMap<String, String>();
+		return channelToKeyMap.get(channel);
 		
-		Enumeration<String> keys = keyToChannelMap.keys();
+	}
+	
+	
+	public List<Pair<String, TargetInfoBean>> getKeyChannelMap(){
+		
+		List<Pair<String, TargetInfoBean>> ret = new LinkedList<Pair<String, TargetInfoBean>>();
+		
+		Enumeration<TargetInfoBean> keys = keyToChannelMap.keys();
 		
 		while(keys.hasMoreElements()) {
-			String key = keys.nextElement();
+			TargetInfoBean key = keys.nextElement();
 			
-			ret.put(key, RemotingHelper.parseChannelRemoteAddr(keyToChannelMap.get(key)));
+			ret.add(new Pair<String, TargetInfoBean>(RemotingHelper.parseChannelRemoteAddr(keyToChannelMap.get(key)), key));
 		}
 		
 		return ret;
+	}
+	
+	
+	public boolean kickOffChannel(TargetInfoBean targetInfo) {
+		
+		Channel channel = keyToChannelMap.get(targetInfo);
+		
+		if(channel != null) {
+			RemotingUtil.closeChannel(channel);
+			
+			return true;
+		}
+		
+		return false;
+		
 	}
 	
 }

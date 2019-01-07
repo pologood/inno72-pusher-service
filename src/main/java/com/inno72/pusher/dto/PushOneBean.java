@@ -2,19 +2,14 @@ package com.inno72.pusher.dto;
 
 public class PushOneBean {
 	
-	private String machineCode;
+	private String targetCode;
+	
+	private String targetType;
 	
 	private String data;
 	
 	private int isQueue = 0;
 
-	public String getMachineCode() {
-		return machineCode;
-	}
-
-	public void setMachineCode(String machineCode) {
-		this.machineCode = machineCode;
-	}
 
 	public String getData() {
 		return data;
@@ -30,6 +25,22 @@ public class PushOneBean {
 
 	public void setIsQueue(int isQueue) {
 		this.isQueue = isQueue;
+	}
+
+	public String getTargetCode() {
+		return targetCode;
+	}
+
+	public void setTargetCode(String targetCode) {
+		this.targetCode = targetCode;
+	}
+
+	public String getTargetType() {
+		return targetType;
+	}
+
+	public void setTargetType(String targetType) {
+		this.targetType = targetType;
 	}
 	
 	
