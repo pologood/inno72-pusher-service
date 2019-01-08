@@ -190,12 +190,12 @@ public class NettyRemotingService implements RemotingService, ApplicationContext
             public void run() {
                 try {
                 	if(channelIdleClear != null)
-                		channelIdleClear.clearTimeoutChannel(5000);
+                		channelIdleClear.clearTimeoutChannel(3000);
                 } catch (Throwable e) {
                 	logger.error("scanResponseTable exception", e);
                 }
             }
-        }, 1000 * 3, 1000);
+        }, 1000 * 2, 1000);
         
         if(this.remotingPostConstruct != null) {
 			this.remotingPostConstruct.postAfterStart();
