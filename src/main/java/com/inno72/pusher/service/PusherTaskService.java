@@ -242,8 +242,8 @@ public class PusherTaskService implements RemotingPostConstruct, SenderResultHan
 						
 						String paramStr = null;
 						
-						if(param instanceof JSONObject) {
-							paramStr = ((JSONObject)param).toJSONString();
+						if(param instanceof JSON) {
+							paramStr = ((JSON)param).toJSONString();
 						}else {
 							paramStr = param.toString();
 						}
