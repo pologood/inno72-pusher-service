@@ -191,8 +191,13 @@ public class PusherTaskService implements RemotingPostConstruct, SenderResultHan
 	
 	public void handleWithRequest(final String method, final String msgType, final JSONObject param, Channel channel) {
 		
-		final String url = serviceMap.get(method);
+		if(param == null) {
+			logger.warn("param is null method:{}", method);
+			return;
+		}
 		
+		final String url = serviceMap.get(method);
+			
 		if(StringUtils.isBlank(url)) {
 			
 			if("machine.register".equalsIgnoreCase(method)) {
@@ -207,7 +212,7 @@ public class PusherTaskService implements RemotingPostConstruct, SenderResultHan
 				}
 			}
 			
-			logger.warn("not found can support method:" + method);
+			logger.warn("not found url can support method:" + method);
 			return;
 		}
 		
@@ -236,11 +241,13 @@ public class PusherTaskService implements RemotingPostConstruct, SenderResultHan
 							header.put("MsgType", msgType);
 						}
 						
+						logger.info("req method:{} param:{} header:{}", method, param.toJSONString(), header);
+						
 						byte[] res = HttpFormConnector.doPostJson(url, param, header, 1000);
 						
 						String resStr = new String(res);
 						
-						logger.info("method:{} param:{} ret:{}", method, param.toJSONString(), resStr);
+						logger.info("rsp ret:{}", resStr);
 						
 						if("machine.register".equalsIgnoreCase(method)) {
 							
