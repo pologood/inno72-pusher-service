@@ -251,7 +251,7 @@ public class PusherTaskService implements RemotingPostConstruct, SenderResultHan
 						
 						logger.info("req url:{} method:{} param:{} header:{}", url, method, paramStr, header);
 						
-						byte[] res = HttpFormConnector.doPost(url, paramStr.getBytes(), "text/plain", header, 1000);
+						byte[] res = HttpFormConnector.doPost(url, paramStr.getBytes(), "application/json", header, 1000);
 						
 						String resStr = new String(res);
 						
