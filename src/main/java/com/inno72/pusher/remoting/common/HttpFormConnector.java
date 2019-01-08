@@ -43,7 +43,7 @@ public class HttpFormConnector {
 		
 	}
 	
-	static public byte[] doPost(String url, byte[] data, String contentType, int timeout) throws IOException{
+	static public byte[] doPost(String url, byte[] data, String contentType,  Map<String, String> headers, int timeout) throws IOException{
 		URL urlConn = new URL(url);
 		HttpURLConnection connector = (HttpURLConnection)urlConn.openConnection();
 		connector.setConnectTimeout(timeout);
@@ -54,6 +54,11 @@ public class HttpFormConnector {
 		connector.setRequestProperty("Content-Type", contentType);
 		connector.connect();
 		
+		if(headers != null) {
+			for(String key : headers.keySet()) {
+				connector.setRequestProperty(key, headers.get(key));
+			}
+		}
 		
 		OutputStream out = connector.getOutputStream();
 		out.write(data);

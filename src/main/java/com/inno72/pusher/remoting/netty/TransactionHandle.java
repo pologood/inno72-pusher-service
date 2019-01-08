@@ -43,7 +43,7 @@ public class TransactionHandle extends SimpleChannelInboundHandler<WebSocketFram
 				
 				String msgType = request.getString("msgType");
 				
-				JSONObject param = request.getJSONObject("param");
+				Object param = request.get("param");
 				
 				pusherTaskService.handleWithRequest(method, msgType, param, ctx.channel());
 				

@@ -189,7 +189,7 @@ public class PusherTaskService implements RemotingPostConstruct, SenderResultHan
 	}
 	
 	
-	public void handleWithRequest(final String method, final String msgType, final JSONObject param, Channel channel) {
+	public void handleWithRequest(final String method, final String msgType, final Object param, Channel channel) {
 		
 		if(param == null) {
 			logger.warn("param is null method:{}", method);
@@ -200,9 +200,9 @@ public class PusherTaskService implements RemotingPostConstruct, SenderResultHan
 			
 		if(StringUtils.isBlank(url)) {
 			
-			if("machine.register".equalsIgnoreCase(method)) {
-				String targetCode = param.getString("targetCode");
-				String targetType = param.getString("type");
+			if("machine.register".equalsIgnoreCase(method) || param instanceof JSONObject ) {
+				String targetCode = ((JSONObject)param).getString("targetCode");
+				String targetType = ((JSONObject)param).getString("type");
 				if(StringUtils.isNotBlank(targetCode) && StringUtils.isNotBlank(targetType)) {
 					clientManager.pickupWaitToRegister(new TargetInfoBean(targetCode, targetType), channel);
 					logger.info("register ok targetCode:{} type:{}", targetCode, targetType);
@@ -241,9 +241,17 @@ public class PusherTaskService implements RemotingPostConstruct, SenderResultHan
 							header.put("MsgType", msgType);
 						}
 						
-						logger.info("req method:{} param:{} header:{}", method, param.toJSONString(), header);
+						String paramStr = null;
 						
-						byte[] res = HttpFormConnector.doPostJson(url, param, header, 1000);
+						if(param instanceof JSONObject) {
+							paramStr = ((JSONObject)param).toJSONString();
+						}else {
+							paramStr = param.toString();
+						}
+						
+						logger.info("req method:{} param:{} header:{}", method, paramStr, header);
+						
+						byte[] res = HttpFormConnector.doPost(url, paramStr.getBytes(), "text/plain", header, 1000);
 						
 						String resStr = new String(res);
 						
