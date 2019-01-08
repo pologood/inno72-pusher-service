@@ -7,15 +7,18 @@ import javax.annotation.Resource;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.alibaba.fastjson.JSON;
 import com.inno72.common.Result;
 import com.inno72.pusher.common.Constants;
 import com.inno72.pusher.dto.KickOffTargetsBean;
 import com.inno72.pusher.dto.PushMultiToMultiBean;
 import com.inno72.pusher.dto.PushMultiToOneBean;
 import com.inno72.pusher.dto.PushOneBean;
+import com.inno72.pusher.dto.SendDataMsgBean;
 import com.inno72.pusher.dto.TargetInfoBean;
 import com.inno72.pusher.model.PusherTaskDaoBean;
 import com.inno72.pusher.remoting.common.ClientManager;
@@ -39,7 +42,7 @@ public class PusherController {
 	private IdWorker idWorker;
 
 	@RequestMapping(value = "/push/one")
-	public Result<Void> pushOne(@RequestBody PushOneBean reqBean) throws UnsupportedEncodingException {
+	public Result<Void> pushOne(@RequestHeader(value="MsgType") String msgType, @RequestBody PushOneBean reqBean) throws UnsupportedEncodingException {
 
 		if (StringUtils.isBlank(reqBean.getTargetCode()) || StringUtils.isBlank(reqBean.getTargetType())
 				|| StringUtils.isBlank(reqBean.getData())) {
@@ -62,7 +65,7 @@ public class PusherController {
 		bean.setTargetCode(reqBean.getTargetCode());
 		bean.setTargetType(reqBean.getTargetType());
 		bean.setType(Constants.MSG_TYPE_TEXT);
-		bean.setMessage(reqBean.getData().getBytes("utf-8"));
+		bean.setMessage(JSON.toJSONString(new SendDataMsgBean(msgType, reqBean.getData())).getBytes("utf-8"));
 
 		if (reqBean.getIsQueue() == 1) {
 			clientManager.sendMsg(bean, pusherTaskService);
@@ -80,7 +83,7 @@ public class PusherController {
 	}
 
 	@RequestMapping(value = "/push/multi/multi")
-	public Result<Void> pushMultiToMulti(@RequestBody PushMultiToMultiBean reqBean) throws UnsupportedEncodingException {
+	public Result<Void> pushMultiToMulti(@RequestHeader(value="MsgType") String msgType, @RequestBody PushMultiToMultiBean reqBean) throws UnsupportedEncodingException {
 
 		if (reqBean.getPeers() == null || reqBean.getPeers().isEmpty()) {
 
@@ -116,6 +119,7 @@ public class PusherController {
 			bean.setTargetCode(peer.getFirst().getTargetCode());
 			bean.setTargetType(peer.getFirst().getTargetType());
 			bean.setType(Constants.MSG_TYPE_TEXT);
+			bean.setMessage(JSON.toJSONString(new SendDataMsgBean(msgType, peer.getSecond())).getBytes("utf-8"));
 			bean.setMessage(peer.getSecond().getBytes("utf-8"));
 
 			if (reqBean.getIsQueue() == 1) {
@@ -134,7 +138,7 @@ public class PusherController {
 
 
 	@RequestMapping(value = "/push/multi/one")
-	public Result<Void> pushMultiToOne(@RequestBody PushMultiToOneBean reqBean) throws UnsupportedEncodingException {
+	public Result<Void> pushMultiToOne(@RequestHeader(value="MsgType") String msgType, @RequestBody PushMultiToOneBean reqBean) throws UnsupportedEncodingException {
 
 		if (reqBean.getTargets() == null || reqBean.getTargets().isEmpty() || StringUtils.isBlank(reqBean.getData())) {
 
@@ -169,8 +173,8 @@ public class PusherController {
 			bean.setTargetType(targetBean.getTargetType());
 			bean.setType(Constants.MSG_TYPE_TEXT);
 
-			bean.setMessage(reqBean.getData().getBytes("utf-8"));
-
+			bean.setMessage(JSON.toJSONString(new SendDataMsgBean(msgType, reqBean.getData())).getBytes("utf-8"));
+			
 			if (reqBean.getIsQueue() == 1) {
 				clientManager.sendMsg(bean, pusherTaskService);
 			} else {
