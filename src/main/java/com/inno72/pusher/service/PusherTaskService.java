@@ -219,23 +219,21 @@ public class PusherTaskService implements RemotingPostConstruct, SenderResultHan
 				if(url != null && param != null) {
 					try {
 						
-						param.put("clientIp", RemotingHelper.parseChannelRemoteAddr(channel));
-						
 						TargetInfoBean targetInfo = clientManager.getTargetInfo(channel);
-						Map<String, String> header = null;
+						
+						Map<String, String> header = new HashMap<String, String>();
+						header.put("clientIp", RemotingHelper.parseChannelRemoteAddr(channel));
+						
 						if(targetInfo != null) {
-							header = new HashMap<String, String>();
 							header.put("TargetCode", targetInfo.getTargetCode());
 							header.put("TargetType", targetInfo.getTargetType());
+						}else if(!"machine.register".equalsIgnoreCase(method)) {
+							logger.warn("the request not register");
+							return;
 						}
 						
 						if(StringUtils.isNotBlank(msgType)) {
-							if(header != null) {
-								header.put("MsgType", msgType);
-							}else {
-								header = new HashMap<String, String>();
-								header.put("MsgType", msgType);
-							}
+							header.put("MsgType", msgType);
 						}
 						
 						byte[] res = HttpFormConnector.doPostJson(url, param, header, 1000);
