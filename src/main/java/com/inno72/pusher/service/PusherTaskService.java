@@ -1,6 +1,5 @@
 package com.inno72.pusher.service;
 
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -272,7 +271,7 @@ public class PusherTaskService implements RemotingPostConstruct, SenderResultHan
 							}
 						}
 						
-					} catch (IOException e) {
+					} catch (Exception e) {
 						logger.error(e.getMessage(), e);
 					}
 				}

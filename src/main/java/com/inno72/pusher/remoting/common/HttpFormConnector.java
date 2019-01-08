@@ -52,7 +52,7 @@ public class HttpFormConnector {
 		connector.setDoInput(true);
 		connector.setRequestMethod("POST");
 		connector.setRequestProperty("Content-Type", contentType);
-		connector.connect();
+		
 		
 		if(headers != null) {
 			for(String key : headers.keySet()) {
@@ -60,6 +60,7 @@ public class HttpFormConnector {
 			}
 		}
 		
+		connector.connect();
 		OutputStream out = connector.getOutputStream();
 		out.write(data);
 		out.flush();
@@ -175,6 +176,20 @@ public class HttpFormConnector {
 			return res;
 		}catch(Exception e){
 			return res;
+		}
+	}
+	
+	
+	public static void main(String[] args) {
+		
+		
+		try {
+			byte[] ret = HttpFormConnector.doPost("http://api.monitor.36solo.com/receiver/receiveMsg", "123asdasdasD".getBytes(), "application/json", null, 1000);
+			
+			System.out.println(new String(ret));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
 	
