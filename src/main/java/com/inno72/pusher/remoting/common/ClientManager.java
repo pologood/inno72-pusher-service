@@ -213,7 +213,7 @@ public class ClientManager implements ChannelEventListener, ChannelIdleClear, Cl
 				@Override
 				public void operationComplete(ChannelFuture future) throws Exception {
 					
-					logger.info("push isSuccess:{} target:{} msg:{} ", future.isSuccess(), task.getTargetInfo(), task.getMessage());
+					logger.info("push isSuccess:{} target:{}", future.isSuccess(), task.getTargetInfo());
 					
 					if (handler != null) {
 						handler.handleResultHandler(future.isSuccess(), task);
@@ -221,7 +221,7 @@ public class ClientManager implements ChannelEventListener, ChannelIdleClear, Cl
 				}
 			});
 		} else {
-			logger.info("push isSuccess:false not conn target:{} msg:{} ", task.getTargetInfo(), task.getMessage());
+			logger.info("push isSuccess:false not conn target:{}", task.getTargetInfo());
 			if (handler != null) {
 				handler.handleResultHandler(false, task);
 			}
