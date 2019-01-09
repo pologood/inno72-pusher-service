@@ -65,7 +65,15 @@ public class PusherController {
 		bean.setTargetCode(reqBean.getTargetCode());
 		bean.setTargetType(reqBean.getTargetType());
 		bean.setType(Constants.MSG_TYPE_TEXT);
-		bean.setMessage(JSON.toJSONString(new SendDataMsgBean(msgType, reqBean.getData())).getBytes("utf-8"));
+		
+		String realMsgType = null;
+		if(StringUtils.isNotBlank(reqBean.getMsgType())) {
+			realMsgType = reqBean.getMsgType();
+		}else if(StringUtils.isNotBlank(msgType)) {
+			realMsgType = msgType;
+		}
+		
+		bean.setMessage(JSON.toJSONString(new SendDataMsgBean(realMsgType, reqBean.getData())).getBytes("utf-8"));
 
 		if (reqBean.getIsQueue() == 1) {
 			clientManager.sendMsg(bean, pusherTaskService);
@@ -119,7 +127,15 @@ public class PusherController {
 			bean.setTargetCode(peer.getFirst().getTargetCode());
 			bean.setTargetType(peer.getFirst().getTargetType());
 			bean.setType(Constants.MSG_TYPE_TEXT);
-			bean.setMessage(JSON.toJSONString(new SendDataMsgBean(msgType, peer.getSecond())).getBytes("utf-8"));
+			
+			String realMsgType = null;
+			if(StringUtils.isNotBlank(reqBean.getMsgType())) {
+				realMsgType = reqBean.getMsgType();
+			}else if(StringUtils.isNotBlank(msgType)) {
+				realMsgType = msgType;
+			}
+			
+			bean.setMessage(JSON.toJSONString(new SendDataMsgBean(realMsgType, peer.getSecond())).getBytes("utf-8"));
 			bean.setMessage(peer.getSecond().getBytes("utf-8"));
 
 			if (reqBean.getIsQueue() == 1) {
@@ -173,7 +189,15 @@ public class PusherController {
 			bean.setTargetType(targetBean.getTargetType());
 			bean.setType(Constants.MSG_TYPE_TEXT);
 
-			bean.setMessage(JSON.toJSONString(new SendDataMsgBean(msgType, reqBean.getData())).getBytes("utf-8"));
+			
+			String realMsgType = null;
+			if(StringUtils.isNotBlank(reqBean.getMsgType())) {
+				realMsgType = reqBean.getMsgType();
+			}else if(StringUtils.isNotBlank(msgType)) {
+				realMsgType = msgType;
+			}
+			
+			bean.setMessage(JSON.toJSONString(new SendDataMsgBean(realMsgType, reqBean.getData())).getBytes("utf-8"));
 			
 			if (reqBean.getIsQueue() == 1) {
 				clientManager.sendMsg(bean, pusherTaskService);

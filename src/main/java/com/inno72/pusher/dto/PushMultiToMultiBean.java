@@ -8,6 +8,8 @@ public class PushMultiToMultiBean {
 	
 	private List<Pair<TargetInfoBean, String>> peers;
 	
+	private String msgType;
+	
 	private int isQueue = 0;
 
 	public List<Pair<TargetInfoBean, String>> getPeers() {
@@ -25,5 +27,15 @@ public class PushMultiToMultiBean {
 	public void setIsQueue(int isQueue) {
 		this.isQueue = isQueue;
 	}
+
+	public String getMsgType() {
+		return msgType;
+	}
+
+	public void setMsgType(String msgType) {
+		this.msgType = msgType;
+	}
+	
+	
 
 }

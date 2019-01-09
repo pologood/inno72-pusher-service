@@ -6,6 +6,8 @@ public class PushOneBean {
 	
 	private String targetType;
 	
+	private String msgType;
+	
 	private String data;
 	
 	private int isQueue = 0;
@@ -41,6 +43,14 @@ public class PushOneBean {
 
 	public void setTargetType(String targetType) {
 		this.targetType = targetType;
+	}
+
+	public String getMsgType() {
+		return msgType;
+	}
+
+	public void setMsgType(String msgType) {
+		this.msgType = msgType;
 	}
 	
 	

@@ -6,6 +6,8 @@ public class PushMultiToOneBean {
 	
 	private List<TargetInfoBean> targets;
 	
+	private String msgType;
+	
 	private String data;
 	
 	private int isQueue = 0;
@@ -33,6 +35,14 @@ public class PushMultiToOneBean {
 
 	public void setIsQueue(int isQueue) {
 		this.isQueue = isQueue;
+	}
+
+	public String getMsgType() {
+		return msgType;
+	}
+
+	public void setMsgType(String msgType) {
+		this.msgType = msgType;
 	}
 
 	
