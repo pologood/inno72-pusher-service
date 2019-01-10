@@ -11,6 +11,8 @@ public class PushMultiToOneBean {
 	private String data;
 	
 	private int isQueue = 0;
+	
+	private int isEncrypt = 1;
 
 
 	public List<TargetInfoBean> getTargets() {
@@ -43,6 +45,14 @@ public class PushMultiToOneBean {
 
 	public void setMsgType(String msgType) {
 		this.msgType = msgType;
+	}
+
+	public int getIsEncrypt() {
+		return isEncrypt;
+	}
+
+	public void setIsEncrypt(int isEncrypt) {
+		this.isEncrypt = isEncrypt;
 	}
 
 	

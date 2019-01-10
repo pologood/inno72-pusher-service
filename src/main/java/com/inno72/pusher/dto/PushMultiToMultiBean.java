@@ -10,6 +10,8 @@ public class PushMultiToMultiBean {
 	
 	private String msgType;
 	
+	private int isEncrypt = 1;
+	
 	private int isQueue = 0;
 
 	public List<Pair<TargetInfoBean, String>> getPeers() {
@@ -34,6 +36,14 @@ public class PushMultiToMultiBean {
 
 	public void setMsgType(String msgType) {
 		this.msgType = msgType;
+	}
+
+	public int getIsEncrypt() {
+		return isEncrypt;
+	}
+
+	public void setIsEncrypt(int isEncrypt) {
+		this.isEncrypt = isEncrypt;
 	}
 	
 	

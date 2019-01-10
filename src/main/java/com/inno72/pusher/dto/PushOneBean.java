@@ -8,6 +8,8 @@ public class PushOneBean {
 	
 	private String msgType;
 	
+	private int isEncrypt = 1;
+	
 	private String data;
 	
 	private int isQueue = 0;
@@ -51,6 +53,14 @@ public class PushOneBean {
 
 	public void setMsgType(String msgType) {
 		this.msgType = msgType;
+	}
+
+	public int getIsEncrypt() {
+		return isEncrypt;
+	}
+
+	public void setIsEncrypt(int isEncrypt) {
+		this.isEncrypt = isEncrypt;
 	}
 	
 	
