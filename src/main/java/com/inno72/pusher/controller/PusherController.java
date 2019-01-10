@@ -42,7 +42,7 @@ public class PusherController {
 	private IdWorker idWorker;
 
 	@RequestMapping(value = "/push/one")
-	public Result<Void> pushOne(@RequestHeader(value="MsgType") String msgType, @RequestBody PushOneBean reqBean) throws UnsupportedEncodingException {
+	public Result<Void> pushOne(@RequestHeader(required=false, value="MsgType") String msgType, @RequestBody PushOneBean reqBean) throws UnsupportedEncodingException {
 
 		if (StringUtils.isBlank(reqBean.getTargetCode()) || StringUtils.isBlank(reqBean.getTargetType())
 				|| StringUtils.isBlank(reqBean.getData())) {
@@ -91,7 +91,7 @@ public class PusherController {
 	}
 
 	@RequestMapping(value = "/push/multi/multi")
-	public Result<Void> pushMultiToMulti(@RequestHeader(value="MsgType") String msgType, @RequestBody PushMultiToMultiBean reqBean) throws UnsupportedEncodingException {
+	public Result<Void> pushMultiToMulti(@RequestHeader(required=false, value="MsgType") String msgType, @RequestBody PushMultiToMultiBean reqBean) throws UnsupportedEncodingException {
 
 		if (reqBean.getPeers() == null || reqBean.getPeers().isEmpty()) {
 
@@ -154,7 +154,7 @@ public class PusherController {
 
 
 	@RequestMapping(value = "/push/multi/one")
-	public Result<Void> pushMultiToOne(@RequestHeader(value="MsgType") String msgType, @RequestBody PushMultiToOneBean reqBean) throws UnsupportedEncodingException {
+	public Result<Void> pushMultiToOne(@RequestHeader(required=false, value="MsgType") String msgType, @RequestBody PushMultiToOneBean reqBean) throws UnsupportedEncodingException {
 
 		if (reqBean.getTargets() == null || reqBean.getTargets().isEmpty() || StringUtils.isBlank(reqBean.getData())) {
 
