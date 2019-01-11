@@ -1,5 +1,9 @@
 package com.inno72.pusher.dto;
 
+import java.io.UnsupportedEncodingException;
+
+import com.alibaba.fastjson.JSON;
+
 public class SendDataMsgBean {
 	
 	private String msgType;
@@ -39,6 +43,9 @@ public class SendDataMsgBean {
 	}
 	
 	
+	public byte[] getPackageBody() throws UnsupportedEncodingException {
+		return JSON.toJSONString(this).getBytes("utf-8");	
+	}
 	
 
 }
