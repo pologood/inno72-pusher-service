@@ -37,6 +37,9 @@ import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpRequestDecoder;
 import io.netty.handler.codec.http.HttpResponseEncoder;
 import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
+import io.netty.handler.timeout.IdleState;
+import io.netty.handler.timeout.IdleStateEvent;
+import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.concurrent.DefaultEventExecutorGroup;
 
 
@@ -58,28 +61,26 @@ public class NettyRemotingService implements RemotingService, ApplicationContext
 	private ApplicationContext applicationContext;
 
 	private ChannelEventListener channelEventListener;
-	
+
 	protected ChannelIdleClear channelIdleClear;
 
 	protected final NettyEventExecutor nettyEventExecutor;
-	
+
 	protected RemotingPostConstruct remotingPostConstruct;
-	
+
 	private final Timer timer = new Timer("ServerHouseKeepingService", true);
 
 	private int port = 0;
 
-	public NettyRemotingService(NettyServerConfig nettyServerConfig, 
-			ChannelEventListener channelEventListener, 
-			ChannelIdleClear channelIdleClear,
-			RemotingPostConstruct remotingPostConstruct) {
+	public NettyRemotingService(NettyServerConfig nettyServerConfig, ChannelEventListener channelEventListener,
+			ChannelIdleClear channelIdleClear, RemotingPostConstruct remotingPostConstruct) {
 
 		this.nettyServerConfig = nettyServerConfig;
 		this.channelEventListener = channelEventListener;
 		this.channelIdleClear = channelIdleClear;
 		this.serverBootstrap = new ServerBootstrap();
 		this.nettyEventExecutor = new NettyEventExecutor(this.channelEventListener);
-		this.remotingPostConstruct = remotingPostConstruct; 
+		this.remotingPostConstruct = remotingPostConstruct;
 
 		int publicThreadNums = nettyServerConfig.getServerCallbackExecutorThreads();
 		if (publicThreadNums <= 0) {
@@ -130,11 +131,11 @@ public class NettyRemotingService implements RemotingService, ApplicationContext
 
 	@Override
 	public void start() {
-		
-		if(this.remotingPostConstruct != null) {
+
+		if (this.remotingPostConstruct != null) {
 			this.remotingPostConstruct.postBeforeStart();
 		}
-		
+
 		this.defaultEventExecutorGroup = new DefaultEventExecutorGroup(nettyServerConfig.getServerWorkerThreads(),
 				new ThreadFactory() {
 
@@ -160,20 +161,23 @@ public class NettyRemotingService implements RemotingService, ApplicationContext
 						ch.pipeline().addLast(defaultEventExecutorGroup, "aggregator",
 								new HttpObjectAggregator(1024 * 1024 * 10));
 						ch.pipeline().addLast(defaultEventExecutorGroup, "encoder", new HttpResponseEncoder());
+						ch.pipeline().addLast(defaultEventExecutorGroup,
+								new IdleStateHandler(0, 0, nettyServerConfig.getServerChannelMaxIdleTimeSeconds()));
 						ch.pipeline().addLast(defaultEventExecutorGroup, "handshake",
 								new WebSocketServerProtocolHandler("/"));
 						ch.pipeline().addLast(defaultEventExecutorGroup, new NettyConnectManageHandler());
-						ch.pipeline().addLast(defaultEventExecutorGroup, "transaction", applicationContext.getBean(TransactionHandle.class));
+						ch.pipeline().addLast(defaultEventExecutorGroup, "transaction",
+								applicationContext.getBean(TransactionHandle.class));
 					}
 				});
 
 		if (nettyServerConfig.isServerPooledByteBufAllocatorEnable()) {
 			childHandler.childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
 		}
-		
+
 		if (this.channelEventListener != null) {
-            this.nettyEventExecutor.start();
-        }
+			this.nettyEventExecutor.start();
+		}
 
 		try {
 			ChannelFuture sync = this.serverBootstrap.bind().sync();
@@ -182,26 +186,25 @@ public class NettyRemotingService implements RemotingService, ApplicationContext
 		} catch (InterruptedException e1) {
 			throw new RuntimeException("this.serverBootstrap.bind().sync() InterruptedException", e1);
 		}
-		
 
-        this.timer.scheduleAtFixedRate(new TimerTask() {
 
-            @Override
-            public void run() {
-                try {
-                	if(channelIdleClear != null)
-                		channelIdleClear.clearTimeoutChannel(3000);
-                } catch (Throwable e) {
-                	logger.error("scanResponseTable exception", e);
-                }
-            }
-        }, 1000 * 2, 1000);
-        
-        if(this.remotingPostConstruct != null) {
+		this.timer.scheduleAtFixedRate(new TimerTask() {
+
+			@Override
+			public void run() {
+				try {
+					if (channelIdleClear != null) channelIdleClear.clearTimeoutChannel(3000);
+				} catch (Throwable e) {
+					logger.error("scanResponseTable exception", e);
+				}
+			}
+		}, 1000 * 2, 1000);
+
+		if (this.remotingPostConstruct != null) {
 			this.remotingPostConstruct.postAfterStart();
 		}
-        
-        logger.info("remoting server start ok :" + this.port);
+
+		logger.info("remoting server start ok :" + this.port);
 
 	}
 
@@ -209,8 +212,8 @@ public class NettyRemotingService implements RemotingService, ApplicationContext
 	public void shutdown() {
 		try {
 			if (this.timer != null) {
-                this.timer.cancel();
-            }
+				this.timer.cancel();
+			}
 
 			this.eventLoopGroupBoss.shutdownGracefully();
 			this.eventLoopGroupSelector.shutdownGracefully();
@@ -279,6 +282,19 @@ public class NettyRemotingService implements RemotingService, ApplicationContext
 
 		@Override
 		public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+			if (evt instanceof IdleStateEvent) {
+				IdleStateEvent event = (IdleStateEvent) evt;
+				if (event.state().equals(IdleState.ALL_IDLE)) {
+					final String remoteAddress = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
+					logger.warn("NETTY SERVER PIPELINE: IDLE exception [{}]", remoteAddress);
+					RemotingUtil.closeChannel(ctx.channel());
+					if (NettyRemotingService.this.channelEventListener != null) {
+						NettyRemotingService.this
+								.putNettyEvent(new NettyEvent(NettyEventType.IDLE, remoteAddress, ctx.channel()));
+					}
+				}
+			}
+
 			ctx.fireUserEventTriggered(evt);
 		}
 
