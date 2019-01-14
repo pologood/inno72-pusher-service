@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.alibaba.fastjson.JSON;
 import com.inno72.common.Result;
 import com.inno72.pusher.common.Constants;
 import com.inno72.pusher.dto.KickOffTargetsBean;
@@ -72,7 +73,7 @@ public class PusherController {
 			realMsgType = msgType;
 		}
 		
-		bean.setMessage(new SendDataMsgBean(realMsgType, reqBean.getData(), reqBean.getIsEncrypt()).getPackageBody());
+		bean.setMessage(JSON.toJSONString(new SendDataMsgBean(realMsgType, reqBean.getData(), reqBean.getIsEncrypt())).getBytes("utf-8"));
 
 		if (reqBean.getIsQueue() == 1) {
 			clientManager.sendMsg(bean, pusherTaskService);
@@ -134,7 +135,7 @@ public class PusherController {
 				realMsgType = msgType;
 			}
 			
-			bean.setMessage(new SendDataMsgBean(realMsgType, peer.getSecond(), reqBean.getIsEncrypt()).getPackageBody());
+			bean.setMessage(JSON.toJSONString(new SendDataMsgBean(realMsgType, peer.getSecond(), reqBean.getIsEncrypt())).getBytes("utf-8"));
 			bean.setMessage(peer.getSecond().getBytes("utf-8"));
 
 			if (reqBean.getIsQueue() == 1) {
@@ -196,7 +197,7 @@ public class PusherController {
 				realMsgType = msgType;
 			}
 			
-			bean.setMessage(new SendDataMsgBean(realMsgType, reqBean.getData(), reqBean.getIsEncrypt()).getPackageBody());
+			bean.setMessage(JSON.toJSONString(new SendDataMsgBean(realMsgType, reqBean.getData(), reqBean.getIsEncrypt())).getBytes("utf-8"));
 			
 			if (reqBean.getIsQueue() == 1) {
 				clientManager.sendMsg(bean, pusherTaskService);
