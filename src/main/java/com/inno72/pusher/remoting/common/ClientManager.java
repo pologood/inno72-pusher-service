@@ -99,10 +99,15 @@ public class ClientManager implements ChannelEventListener, ChannelIdleClear, Cl
 		if (channel == null) {
 			return;
 		}
-
-		if (removeWaitChannel(channel)) return;
+		
+		logger.info("removeClientWithoutClose {} ", RemotingHelper.parseChannelRemoteAddr(channel));
+		
+		if(removeWaitChannel(channel)) {
+			logger.info("removeClientWithoutClose removeWaitChannel {} ", RemotingHelper.parseChannelRemoteAddr(channel));
+		}
 
 		try {
+			logger.info("removeClientWithoutClose channelToKeyMap {} ", RemotingHelper.parseChannelRemoteAddr(channel));
 			registerLocker.writeLock().lock();
 			TargetInfoBean key = channelToKeyMap.get(channel);
 			if (key == null) {
