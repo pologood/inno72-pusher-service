@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+import com.inno72.pusher.common.Constants;
 import com.inno72.pusher.dto.TargetInfoBean;
 import com.inno72.pusher.model.PusherTaskDaoBean;
 import com.inno72.pusher.remoting.ChannelEventListener;
@@ -212,8 +213,11 @@ public class ClientManager implements ChannelEventListener, ChannelIdleClear, Cl
 			channel.writeAndFlush(rspFrame).addListener(new ChannelFutureListener() {
 				@Override
 				public void operationComplete(ChannelFuture future) throws Exception {
-					
-					logger.info("push isSuccess:{} target:{}", future.isSuccess(), task.getTargetInfo());
+					if(task.getType() == Constants.MSG_TYPE_TEXT) {
+						logger.info("push isSuccess:{} target:{} msg:{}", future.isSuccess(), task.getTargetInfo(), new String(task.getMessage()));
+					}else {
+						logger.info("push isSuccess:{} target:{} msg:binary", future.isSuccess(), task.getTargetInfo());
+					}
 					
 					if (handler != null) {
 						handler.handleResultHandler(future.isSuccess(), task);
@@ -221,7 +225,12 @@ public class ClientManager implements ChannelEventListener, ChannelIdleClear, Cl
 				}
 			});
 		} else {
-			logger.info("push isSuccess:false not conn target:{}", task.getTargetInfo());
+			if(task.getType() == Constants.MSG_TYPE_TEXT) {
+				logger.info("push isSuccess:false not conn target:{} msg:{}", task.getTargetInfo(), new String(task.getMessage()));
+			}else {
+				logger.info("push isSuccess:false not conn target:{} msg:binary", task.getTargetInfo());
+			}
+			
 			if (handler != null) {
 				handler.handleResultHandler(false, task);
 			}
