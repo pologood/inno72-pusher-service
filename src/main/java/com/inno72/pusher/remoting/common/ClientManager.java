@@ -104,6 +104,7 @@ public class ClientManager implements ChannelEventListener, ChannelIdleClear, Cl
 		
 		if(removeWaitChannel(channel)) {
 			logger.info("removeClientWithoutClose removeWaitChannel {} ", RemotingHelper.parseChannelRemoteAddr(channel));
+			return;
 		}
 
 		try {
