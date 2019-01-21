@@ -162,7 +162,7 @@ public class NettyRemotingService implements RemotingService, ApplicationContext
 								new HttpObjectAggregator(1024 * 1024 * 10));
 						ch.pipeline().addLast(defaultEventExecutorGroup, "encoder", new HttpResponseEncoder());
 						ch.pipeline().addLast(defaultEventExecutorGroup,
-								new IdleStateHandler(nettyServerConfig.getServerChannelMaxIdleTimeSeconds(), 0, 0));
+								new IdleStateHandler(nettyServerConfig.getServerChannelMaxIdleTimeSeconds(), 0, nettyServerConfig.getServerChannelMaxIdleTimeSeconds()));
 						ch.pipeline().addLast(defaultEventExecutorGroup, "handshake",
 								new WebSocketServerProtocolHandler("/"));
 						ch.pipeline().addLast(defaultEventExecutorGroup, new NettyConnectManageHandler());
