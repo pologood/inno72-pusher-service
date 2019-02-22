@@ -8,6 +8,8 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 import javax.annotation.Resource;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import com.inno72.pusher.mapper.PusherInfoDao;
@@ -15,8 +17,9 @@ import com.inno72.pusher.model.PusherTaskDaoBean;
 
 @Component
 public class PushQueues {
-	
-	
+
+	private final Logger logger = LoggerFactory.getLogger(this.getClass());
+
 	private final int FIRST_LEVEL_QUEUE_TIMES = 5;
 	
 	
@@ -72,7 +75,13 @@ public class PushQueues {
 		    	queue.add(task);
 		    	it.remove();
 		    }
-		}	
+		}
+
+		logger.info("getNeedResendTask size is {} ", tasks.size());
+		for (PusherTaskDaoBean task : tasks) {
+			logger.info("getNeedResendTask task is {} , msgType is {} ", task.getTargetType() , task.getMsgType());
+		}
+
 		return tasks;
 	}
 
