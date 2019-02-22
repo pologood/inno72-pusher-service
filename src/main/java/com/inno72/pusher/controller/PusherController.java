@@ -6,6 +6,8 @@ import java.util.List;
 import javax.annotation.Resource;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -30,6 +32,7 @@ import com.inno72.pusher.service.PusherTaskService;
 @RequestMapping("/pusher")
 public class PusherController {
 
+	private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
 	@Resource
 	private ClientManager clientManager;
@@ -43,6 +46,8 @@ public class PusherController {
 
 	@RequestMapping(value = "/push/one")
 	public Result<Void> pushOne(@RequestHeader(required=false, value="MsgType") String msgType, @RequestBody PushOneBean reqBean) throws UnsupportedEncodingException {
+
+		logger.info("msgType is {}, reqBean msgType is {}", msgType, reqBean.getMsgType());
 
 		if (StringUtils.isBlank(reqBean.getTargetCode()) || StringUtils.isBlank(reqBean.getTargetType())
 				|| StringUtils.isBlank(reqBean.getData())) {

@@ -149,7 +149,7 @@ public class PusherTaskDaoBean {
 			if (this.msgType.equals("h5")) {
 				return 1;
 			}
-			else if (this.msgType.equals("machine")) {
+			else if (this.msgType.equals("message")) {
 				return 2;
 			}
 		}
