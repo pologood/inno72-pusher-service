@@ -206,6 +206,9 @@ public class PusherController {
 			bean.setMessage(JSON.toJSONString(new SendDataMsgBean(realMsgType, reqBean.getData(), reqBean.getIsEncrypt())).getBytes("utf-8"));
 			bean.setMsgType(realMsgType);
 
+			// queue 都设置为0 ，业务方自己重试
+			bean.setQueueLevel(0);
+
 			if (reqBean.getIsQueue() == 1) {
 				clientManager.sendMsg(bean, pusherTaskService);
 			} else {
