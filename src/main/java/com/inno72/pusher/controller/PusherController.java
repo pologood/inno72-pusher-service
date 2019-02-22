@@ -65,7 +65,7 @@ public class PusherController {
 		bean.setTargetCode(reqBean.getTargetCode());
 		bean.setTargetType(reqBean.getTargetType());
 		bean.setType(Constants.MSG_TYPE_TEXT);
-		
+
 		String realMsgType = null;
 		if(StringUtils.isNotBlank(reqBean.getMsgType())) {
 			realMsgType = reqBean.getMsgType();
@@ -74,6 +74,7 @@ public class PusherController {
 		}
 		
 		bean.setMessage(JSON.toJSONString(new SendDataMsgBean(realMsgType, reqBean.getData(), reqBean.getIsEncrypt())).getBytes("utf-8"));
+		bean.setMsgType(realMsgType);
 
 		if (reqBean.getIsQueue() == 1) {
 			clientManager.sendMsg(bean, pusherTaskService);
@@ -198,7 +199,8 @@ public class PusherController {
 			}
 			
 			bean.setMessage(JSON.toJSONString(new SendDataMsgBean(realMsgType, reqBean.getData(), reqBean.getIsEncrypt())).getBytes("utf-8"));
-			
+			bean.setMsgType(realMsgType);
+
 			if (reqBean.getIsQueue() == 1) {
 				clientManager.sendMsg(bean, pusherTaskService);
 			} else {

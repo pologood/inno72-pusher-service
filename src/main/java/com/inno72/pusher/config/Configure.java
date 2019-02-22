@@ -1,8 +1,6 @@
 package com.inno72.pusher.config;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.springframework.context.annotation.Bean;
@@ -39,5 +37,25 @@ public class Configure {
 		
 		return executor;
 	}
-	
+
+	@Bean(name="asyncPublicPriorityExecutor")
+	ExecutorService getAsyncPublicPriorityExecutor() {
+
+		ThreadPoolExecutor executor = new ThreadPoolExecutor(
+				2,
+				32,
+				Long.MAX_VALUE, /* timeout */
+				TimeUnit.NANOSECONDS,
+				new PriorityBlockingQueue<Runnable>(),
+				new ThreadFactory() {
+					private AtomicInteger threadIndex = new AtomicInteger(0);
+
+					@Override
+					public Thread newThread(Runnable r) {
+						return new Thread(r, "asyncPublicPriorityExecutor" + this.threadIndex.incrementAndGet());
+					}},
+				new ThreadPoolExecutor.AbortPolicy());
+		return executor;
+	}
+
 }

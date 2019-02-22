@@ -1,6 +1,7 @@
 package com.inno72.pusher.model;
 
 import com.inno72.pusher.dto.TargetInfoBean;
+import org.apache.commons.lang3.StringUtils;
 
 public class PusherTaskDaoBean {
 	
@@ -23,6 +24,8 @@ public class PusherTaskDaoBean {
 	private Long updateTime;
 	
 	private Integer times = 0;
+
+	private String msgType;
 	
 	
 	public PusherTaskDaoBean() {
@@ -132,7 +135,24 @@ public class PusherTaskDaoBean {
 	public TargetInfoBean getTargetInfo() {
 		return new TargetInfoBean(this.getTargetCode(), this.getTargetType());
 	}
-	
-	
 
+	public String getMsgType() {
+		return msgType;
+	}
+
+	public void setMsgType(String msgType) {
+		this.msgType = msgType;
+	}
+
+	public int getPriority() {
+		if (StringUtils.isNotEmpty(this.msgType)) {
+			if (this.msgType.equals("h5")) {
+				return 1;
+			}
+			else if (this.msgType.equals("machine")) {
+				return 2;
+			}
+		}
+		return 0;
+	}
 }

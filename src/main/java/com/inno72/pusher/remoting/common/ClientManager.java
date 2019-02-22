@@ -7,6 +7,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.apache.commons.lang.StringUtils;
@@ -27,8 +28,13 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 
+import javax.annotation.Resource;
+
 @Component
 public class ClientManager implements ChannelEventListener, ChannelIdleClear, ClientSender {
+
+	@Resource(name = "asyncPublicPriorityExecutor")
+	private ExecutorService asyncPublicPriorityExecutor;
 
 	private ConcurrentHashMap<Channel, TargetInfoBean> channelToKeyMap = new ConcurrentHashMap<Channel, TargetInfoBean>();
 
@@ -42,7 +48,7 @@ public class ClientManager implements ChannelEventListener, ChannelIdleClear, Cl
 
 	private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-	
+
 
 	protected boolean registerClient(TargetInfoBean key, Channel channel) {
 
@@ -209,39 +215,92 @@ public class ClientManager implements ChannelEventListener, ChannelIdleClear, Cl
 
 	}
 
-	@Override
-	public void sendMsg(PusherTaskDaoBean task, SenderResultHandler handler) throws UnsupportedEncodingException {
+	public class PrioritizedRunnable implements Runnable, Comparable<PrioritizedRunnable> {
 
-		Channel channel = keyToChannelMap.get(task.getTargetInfo());
+		private PusherTaskDaoBean task = null;
+		private SenderResultHandler handler = null;
+		private int p = 0;
 
-		if (channel != null) {
-			TextWebSocketFrame rspFrame = new TextWebSocketFrame(new String(task.getMessage(), "utf-8"));
-			channel.writeAndFlush(rspFrame).addListener(new ChannelFutureListener() {
-				@Override
-				public void operationComplete(ChannelFuture future) throws Exception {
-					if(task.getType() == Constants.MSG_TYPE_TEXT) {
-						logger.info("push isSuccess:{} target:{} msg:{}", future.isSuccess(), task.getTargetInfo(), new String(task.getMessage()));
-					}else {
-						logger.info("push isSuccess:{} target:{} msg:binary", future.isSuccess(), task.getTargetInfo());
-					}
-					
-					if (handler != null) {
-						handler.handleResultHandler(future.isSuccess(), task);
-					}
+		PrioritizedRunnable(int p, PusherTaskDaoBean task, SenderResultHandler handler) {
+			this.task = task;
+			this.handler = handler;
+			this.p = p;
+		}
+
+		public PusherTaskDaoBean getTask() {
+			return task;
+		}
+
+		public void setTask(PusherTaskDaoBean task) {
+			this.task = task;
+		}
+
+		public SenderResultHandler getHandler() {
+			return handler;
+		}
+
+		public void setHandler(SenderResultHandler handler) {
+			this.handler = handler;
+		}
+
+		public int getP() {
+			return p;
+		}
+
+		@Override
+		public void run() {
+
+			logger.info("thread is {}, msgType is {}, priority is {} " ,Thread.currentThread().getName() , this.getTask().getMsgType(), this.getP());
+
+			Channel channel = keyToChannelMap.get(task.getTargetInfo());
+
+			if (channel != null) {
+				TextWebSocketFrame rspFrame = null;
+				try {
+					rspFrame = new TextWebSocketFrame(new String(task.getMessage(), "utf-8"));
+				} catch (UnsupportedEncodingException e) {
+					e.printStackTrace();
 				}
-			});
-		} else {
-			if(task.getType() == Constants.MSG_TYPE_TEXT) {
-				logger.info("push isSuccess:false not conn target:{} msg:{}", task.getTargetInfo(), new String(task.getMessage()));
-			}else {
-				logger.info("push isSuccess:false not conn target:{} msg:binary", task.getTargetInfo());
-			}
-			
-			if (handler != null) {
-				handler.handleResultHandler(false, task);
+				channel.writeAndFlush(rspFrame).addListener(new ChannelFutureListener() {
+					@Override
+					public void operationComplete(ChannelFuture future) throws Exception {
+						if(task.getType() == Constants.MSG_TYPE_TEXT) {
+							logger.info("push isSuccess:{} target:{} msg:{}", future.isSuccess(), task.getTargetInfo(), new String(task.getMessage()));
+						}else {
+							logger.info("push isSuccess:{} target:{} msg:binary", future.isSuccess(), task.getTargetInfo());
+						}
+
+						if (handler != null) {
+							handler.handleResultHandler(future.isSuccess(), task);
+						}
+					}
+				});
+			} else {
+				if(task.getType() == Constants.MSG_TYPE_TEXT) {
+					logger.info("push isSuccess:false not conn target:{} msg:{}", task.getTargetInfo(), new String(task.getMessage()));
+				}else {
+					logger.info("push isSuccess:false not conn target:{} msg:binary", task.getTargetInfo());
+				}
+
+				if (handler != null) {
+					handler.handleResultHandler(false, task);
+				}
 			}
 		}
 
+		@Override
+		public int compareTo(PrioritizedRunnable o) {
+			int a = this.getP();
+			int b = o.getP();
+			int result = (a < b) ? -1 : ((a == b) ? 0 : 1);
+			logger.debug("result is {} ", result);
+			return result;
+		}
+	}
+
+	@Override
+	public void sendMsg(PusherTaskDaoBean task, SenderResultHandler handler) throws UnsupportedEncodingException {
+		asyncPublicPriorityExecutor.execute(new PrioritizedRunnable(task.getPriority(), task, handler));
 	}
 
 	@Override
