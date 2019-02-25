@@ -77,10 +77,10 @@ public class PushQueues {
 		    }
 		}
 
-		logger.info("getNeedResendTask size is {} ", tasks.size());
-		for (PusherTaskDaoBean task : tasks) {
-			logger.info("getNeedResendTask task is {} , msgType is {} ", task.getTargetType() , task.getMsgType());
-		}
+//		logger.info("getNeedResendTask size is {} ", tasks.size());
+//		for (PusherTaskDaoBean task : tasks) {
+//			logger.info("getNeedResendTask task is {} , msgType is {} ", task.getTargetType() , task.getMsgType());
+//		}
 
 		return tasks;
 	}
